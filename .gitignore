@@ -1,0 +1,8 @@
+*.root
+*.pyc
+__pycache__
+test/workspaces/
+test/logs/
+combine_logger.out
+test/scans/
+test/plots/

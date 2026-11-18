@@ -1,0 +1,69 @@
+import re
+from HiggsAnalysis.CombinedLimit.PhysicsModel import PhysicsModel
+
+#
+# Polarization signal strengths model, LL and TL merged into LX, in gen-level bins
+#
+#   POI, for each gen bin N:  mu_LX_N, mu_TT_N
+#
+# Processes are assigned to a gen bin and a polarization state from their name suffix:
+#
+#     <anything>_binN_LL, <anything>_binN_TL (or _LT)  ->  scaled by mu_LX_N
+#     <anything>_binN_TT                               ->  scaled by mu_TT_N
+#     anything else                                    ->  not scaled (background)
+#
+# Gen bins are found automatically in the datacard and must be N = 0, 1, ..., nGenBins-1.
+# mu_AA_N = sigma_AA_N / sigma_AA_N^SM: no SM fractions needed.
+#
+# Run:
+#     text2workspace.py datacard.txt -P HiggsAnalysis.PolarizationModel.PolarizationSignalStrengthsLXGenBin:polarizationSignalStrengthsLXGenBin -o model.root
+#
+
+
+def getGenBinPolarization(process):
+  match = re.search(r"_bin(\d+)_(LL|TL|LT|TT)$", process)
+  if match is None:
+    if re.search(r"_(LL|TL|LT|TT)$", process):
+      raise RuntimeError("process " + process + " has a polarization suffix but no _binN_: fix the name")
+    return None, None
+  pol = "TT" if match.group(2) == "TT" else "LX"
+  return int(match.group(1)), pol
+
+
+class PolarizationSignalStrengthsLXGenBin(PhysicsModel):
+
+  def __init__(self):
+    PhysicsModel.__init__(self)
+
+  def doParametersOfInterest(self):
+
+    #
+    # find the gen bins in the datacard
+    #
+    genBins = set()
+    for process in self.DC.processes:
+      genBin, pol = getGenBinPolarization(process)
+      if genBin is not None:
+        genBins.add(genBin)
+    nGenBins = len(genBins)
+    if sorted(genBins) != list(range(nGenBins)):
+      raise RuntimeError("PolarizationSignalStrengthsLXGenBin: gen bins must be 0, ..., N-1, found " + str(sorted(genBins)))
+    print (" nGenBins = ", nGenBins)
+
+    pois = []
+    for iBin in range(nGenBins):
+      for pol in ["LX", "TT"]:
+        self.modelBuilder.doVar(f"mu_{pol}_{iBin}[1,0,20]")
+        pois.append(f"mu_{pol}_{iBin}")
+
+    self.modelBuilder.doSet("POI", ",".join(pois))
+
+  def getYieldScale(self, bin, process):
+    genBin, pol = getGenBinPolarization(process)
+    if genBin is None:
+      return 1
+    print (" bin = ", bin, " process = ", process, " -> mu_" + pol + "_" + str(genBin))
+    return "mu_" + pol + "_" + str(genBin)
+
+
+polarizationSignalStrengthsLXGenBin = PolarizationSignalStrengthsLXGenBin()
