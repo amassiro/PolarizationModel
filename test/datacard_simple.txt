@@ -1,0 +1,14 @@
+imax *
+jmax *
+kmax *
+--------------------------------------------------------------------------------
+bin           regLL         regTL         regTT         
+observation   251.0         504.0         662.0         
+--------------------------------------------------------------------------------
+bin           regLL         regLL         regLL         regLL         regTL         regTL         regTL         regTL         regTT         regTT         regTT         regTT         
+process       sig_LL        sig_TL        sig_TT        background    sig_LL        sig_TL        sig_TT        background    sig_LL        sig_TL        sig_TT        background    
+process       0             -1            -2            1             0             -1            -2            1             0             -1            -2            1             
+rate          30.000        54.000        67.000        100.000       18.000        135.000       201.000       150.000       6.000         54.000        402.000       200.000       
+--------------------------------------------------------------------------------
+lumi lnN      1.02          1.02          1.02          1.02          1.02          1.02          1.02          1.02          1.02          1.02          1.02          1.02          
+bkgnorm lnN   -             -             -             1.1           -             -             -             1.1           -             -             -             1.1           
